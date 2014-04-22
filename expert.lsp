@@ -8,6 +8,7 @@ The original codes were provided by Dr. Weiss. Functions were edited so that the
 
 14/04/18 - diagnose edited
 14/04/20 - minor modifications
+14/04/22 - debug for CF calculation
 
 The following notes come from the originalsource file.
 ---------------------------------------------------------
@@ -107,8 +108,8 @@ Modifications (John M. Weiss, Ph.D.)
 )
 	; get cf from if part
 	(setf cf-if (testif rule))
-	; if CF from testif is more than 0.2, fire rule
-	(when (>= cf-if 0.2)
+	; if CF from testif is more than 0, fire rule
+	(when (> cf-if 0)
 		(setf cf-result (usethen rule cf-if))
 		(setq *rulesused* (cons rule *rulesused*))
 	)
@@ -261,7 +262,7 @@ Modifications (John M. Weiss, Ph.D.)
 		)
 		(T              ; if fact-db has values, return fact with current MB/MD
 			; get the MB/MD from fact-db
-			(setf mbmd (cdar (cadadr fact-db)))
+			(setf mbmd (cdaar (member (cadadr fact) (cdadr fact-db) :test #'val-equal)))
 			; assign MB/MD to fact
 			(setf (cdar (cadadr fact)) mbmd)
 		)
@@ -320,12 +321,18 @@ Modifications (John M. Weiss, Ph.D.)
 	; each hypothesis is examined
 	(dolist (hypothesis *hypotheses*)
 	
+		
 		; get the CF of hypothesis
 		(setf cfbuff  (getcf (verify hypothesis)))
 		
 		; if CF is beyond the limit (0.2), add it to the proved list
-		(if (>= cfbuff 0.2)
-			(setf *proved* (cons hypothesis *proved*))
+		(when (>= cfbuff 0.2)
+			(if (null (member hypothesis *proved* :test #'fact-included)) ; if hypothesis is newly added
+				(setf *proved* (cons (copy-list hypothesis) *proved*))
+				
+				; otherwise, update its CF
+				(setcf (car (member hypothesis *proved* :test #'fact-included)) cfbuff)
+			)
 		)
 	)
 	
@@ -344,7 +351,7 @@ Modifications (John M. Weiss, Ph.D.)
 (defun verify (fact)
 (let (relevant1 relevant2 cfbuff)
 	(setf cfbuff (getcf (recall fact))) ; try to get fact in the knowledge (MB/MD of FACT are updated)
-	(when (>= (abs cfbuff) 0.2)         ; is fact already known? (getcf is in cf.lsp: if unknown, cfbuff gets NIL)
+	(when (> (abs cfbuff) 0.0)          ; is fact already known? (CF=0 means totally unknown)
 		(return-from verify fact)       ; if already known, return FACT with its current CF
 	)
 	(setq relevant1 (inthen fact))      ; list rules with fact in then part
@@ -375,24 +382,27 @@ Modifications (John M. Weiss, Ph.D.)
 
 	; see if fact is directly deducible
 	(dolist (relevant relevant1)
-		(setf cfbuff (tryrule relevant))    ; get CF by firing rules based on existing knowledge
-		(when (>= cfbuff 0.2)               ; if CF has a value high enough to be credible
-			(setcf fact cfbuff)                 ; update CF
-			(return-from verify fact)           ; return fact
+		(when (not (member relevant *rulesused* :test #'equal))  ; if the rule has never been used
+			(setf cfbuff (tryrule relevant))                     ; get CF by firing rules based on existing knowledge
+			
+			(if (= (abs (getcf fact)) 1.0)             ; if CF has a value high enough to be credible
+				(return-from verify fact)              ; return fact
+			)
 		)
 	)
 
 	; see if fact is indirectly deducible
 	(dolist (relevant relevant2)
-		(setf cfbuff (tryrule+ relevant))   ; get CF by firing rules recursively
-		(when (>= cfbuff 0.2)               ; if CF has a value high enough to be credible
-			(setcf fact cfbuff)                 ; update CF
-			(return-from verify fact)           ; return fact
+		(when (not (member relevant *rulesused* :test #'equal))  ; if the rule has never been used
+			(setf cfbuff (tryrule+ relevant))                     ; get CF by firing rules based on existing knowledge
+			
+			(if (= (abs (getcf fact)) 1.0)             ; if CF has a value high enough to be credible
+				(return-from verify fact)              ; return fact
+			)
 		)
 	)
 
-	; if not certain enough
-	(setcf fact 0) ; set 0
+	(recall fact)  ; get the updated cf
 	fact           ; return fact
 ))
 
@@ -485,7 +495,7 @@ Modifications (John M. Weiss, Ph.D.)
 			(setf cfbuff (combcf (getcf new) (- (cadr valbuff) (caddr valbuff))))
 			; update CF
 			(setcf new cfbuff)
-			(setf (cdr valbuff) (cdaar (cdadr new))) ; update for knowledge
+			(setf (cdr valbuff) (cdaar (cdadr new)))                         ; update for *facts*
 			; return new with updated CF
 			new
 		)
@@ -598,11 +608,13 @@ Modifications (John M. Weiss, Ph.D.)
 )
 	; get cf from if part
 	(setf cf-if (testif+ rule))
-	; if CF from testif is more than 0.2, fire rule
-	(when (>= cf-if 0.2)
+	; if CF from testif is more than 0, fire rule
+	(when (> cf-if 0)
 		(setf cf-result (usethen rule cf-if))
 		(setq *rulesused* (cons rule *rulesused*))
 	)
+
+
 	; return the result
 	cf-result
 ))
