@@ -1,5 +1,6 @@
 #|
                 ***** FRAMES.LSP *****
+This is a copy of Dr. Weiss's FRAMES.LSP with a couple of new functions for this use of it
 
 Frame-based knowledge representation routines from Chapter 22 of Winston and Horn LISP text
 (1st edition, Addison-Wesley, 1981). Frames are stored as associations lists on symbol property lists.
@@ -7,10 +8,15 @@ Value facets are stored as (value mb md), where mb and md are MYCIN measures of 
 
 Usage:
 Code runs automatically upon loading.
-(fget frame slot facet)			- retrieve SLOT/FACET information from FRAME
-(fput frame slot facet value)		- add SLOT/FACET/VALUE to FRAME
-(fremove frame slot facet value)	- remove SLOT/FACET/VALUE information from FRAME
-(fgetframe frame)			- return the entire FRAME info
+WEISS FUNCTIONS
+	(fget frame slot facet)			- retrieve SLOT/FACET information from FRAME
+	(fput frame slot facet value)		- add SLOT/FACET/VALUE to FRAME
+	(fremove frame slot facet value)	- remove SLOT/FACET/VALUE information from FRAME
+	(fgetframe frame)			- return the entire FRAME info
+OUR FUNCTIONS
+	(fputproved proved student)   - add the facts PROVED to the FRAME of STUDENT
+	(fclearframe student)	- NOT USED but usage is to delete all info about a single student
+
 
 Modifications (John M. Weiss, Ph.D.)
 11/25/98 - Removed interactive queries for more info.
@@ -68,6 +74,43 @@ Modifications (John M. Weiss, Ph.D.)
         (when (null (cdr facets)) (delete facets slots))
         (not (null target))     ; return T if removed something, else NIL
     )
+)
+
+;Adds proved facts to student frame
+(defun fputproved (proved student)
+	(let (frame slot tem2 ) 
+		;For each fact proved add that to the frame
+		(dolist (rule proved)
+				;Student Frame
+				(setq frame student)
+				;what the n part is eg n = y
+				(setq slot (nth 0 rule))
+				;the y part minus the cf 
+				(setq temp2 (car (car (car (cdr (nth 1 rule))))))
+				;the y part plus the cf
+				(setq value (cons temp2 (cdr (car (car (cdr (nth 1 rule)))))))				
+				(fput frame slot 'value value)
+		)		
+	)
+)
+
+;NOT USED it clears all info from a student
+(defun fclearframe(student)
+	(let ()
+	
+	;Go through all slots of the student
+	(dolist (temp (cdr (fgetframe student)))
+		;set frame student
+		(setq frame student)	
+		;set slot
+		(setq slot  (car temp))
+		;for each value in that slot
+		(dolist (value (cdr (car (cdr temp))))
+			(setq value (car value))
+			(fremove frame slot 'value value)
+		)
+	)	
+)
 )
 #|
 ;=============================================================
