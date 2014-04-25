@@ -86,9 +86,9 @@ Modifications (John M. Weiss, Ph.D.)
 				;what the n part is eg n = y
 				(setq slot (nth 0 rule))
 				;the y part minus the cf 
-				(setq temp2 (car (car (car (cdr (nth 1 rule))))))
+				(setq temp2 (caaadr (nth 1 rule)))
 				;the y part plus the cf
-				(setq value (cons temp2 (cdr (car (car (cdr (nth 1 rule)))))))				
+				(setq value (cons temp2 (cdaadr  (nth 1 rule))))				
 				(fput frame slot 'value value)
 		)		
 	)
@@ -96,7 +96,7 @@ Modifications (John M. Weiss, Ph.D.)
 
 ;NOT USED it clears all info from a student
 (defun fclearframe(student)
-	(let ()
+	(let (frame slot value)
 	
 	;Go through all slots of the student
 	(dolist (temp (cdr (fgetframe student)))
@@ -105,13 +105,13 @@ Modifications (John M. Weiss, Ph.D.)
 		;set slot
 		(setq slot  (car temp))
 		;for each value in that slot
-		(dolist (value (cdr (car (cdr temp))))
+		(dolist (value (cadadr temp)))
 			(setq value (car value))
 			(fremove frame slot 'value value)
 		)
 	)	
 )
-)
+
 #|
 ;=============================================================
 ; Test the routines:

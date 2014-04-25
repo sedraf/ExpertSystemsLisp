@@ -79,7 +79,7 @@ Code runs automatically upon loading.
 
 
 ;sort rules sorts returns how n1's cf compares to n2's cf
-(defun sort-rules (n1 n2) (> (nth 1 (car (car (cdr (car (cdr n1)))))) (nth 1 (car (car (cdr (car (cdr n2)))))))) 
+(defun sort-rules (n1 n2) (> (nth 1 (caadar  (cdr n1))) (nth 1 (caadar (cdr n2))))) 
 
 ;Outputs the data of student with name and will only output up to n rules (if n is not set n = length of proved list)
 (defun output(name &optional (n (length *proved*)))
@@ -88,13 +88,13 @@ Code runs automatically upon loading.
 		(sort *proved* #'sort-rules)
 		(format t "~%Wow! ~a looks like a real winner!~%Just take a look at these wonderful career possibilities:~%~%" name)
 		;If n is nil shouldnt be needed used because of random bugs
-		(if (string= (write-to-string n)  (write-to-string nil)) (setq n (length *proved*)))	
+		(if (null n) (setq n (length *proved*)))	
 	
 		;Walk through n rules or lenght of proved if n is larger then length 
 		(loop while (and (<= i n) (<= i (length *proved*))) do
 
 			(setq rule (nth (- i 1) *proved*))			
-			(setq then (car (car (cdr (car (cdr rule))))))
+			(setq then (caadar (cdr rule)))
 			(format t "~a) ~a = ~a with CF of ~2$~%"  i  (car rule)   (car then) (nth 1 then))
 			;increment i
 			(setq i (+ i 1))

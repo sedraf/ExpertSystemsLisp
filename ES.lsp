@@ -1,9 +1,10 @@
 
 (defun careers ( student &optional n)
-
-	(fclearframe student)
+	
+	(fclearframe student)	
 	(students)
 	(initialize student)       ; initialization
+	
 	(setf *proved* (diagnose)) ; main process
 	
 	(fputproved *proved* student)
