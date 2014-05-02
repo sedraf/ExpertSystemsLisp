@@ -618,7 +618,7 @@ Modifications (John M. Weiss, Ph.D.)
 	; return the result
 	cf-result
 ))
-
+#|
 ;-----------------------------------------------------------------
 ; explanatory routines
 
@@ -673,4 +673,4 @@ Modifications (John M. Weiss, Ph.D.)
 		)
 	)
 )
-
+|#

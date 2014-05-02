@@ -26,6 +26,7 @@
 (load 'expert)
 (load 'cf)
 (load 'frame)
+(load 'whyhowquery)
 
 (defvar *students*)
 (defvar *rules*)
