@@ -78,7 +78,7 @@ Modifications (John M. Weiss, Ph.D.)
 
 ;Adds proved facts to student frame
 (defun fputproved (proved student)
-	(let (frame slot tem2 ) 
+	(let (frame slot temp2 ) 
 		;For each fact proved add that to the frame
 		(dolist (rule proved)
 				;Student Frame
@@ -96,7 +96,7 @@ Modifications (John M. Weiss, Ph.D.)
 
 ;NOT USED it clears all info from a student
 (defun fclearframe(student)
-	(let (frame slot value)
+	(let (frame slot values)
 	
 	;Go through all slots of the student
 	(dolist (temp (cdr (fgetframe student)))
@@ -104,12 +104,16 @@ Modifications (John M. Weiss, Ph.D.)
 		(setq frame student)	
 		;set slot
 		(setq slot  (car temp))
+		;(print (cdadr temp))
 		;for each value in that slot
-		(dolist (value (cadadr temp)))
-			(setq value (car value))
-			(fremove frame slot 'value value)
+		(dolist (values (cdadr temp))
+			(dolist (value2 values)
+				;(print  value2)
+				(fremove frame slot 'value value2)
+				)
 		)
 	)	
+)
 )
 
 #|
